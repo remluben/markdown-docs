@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Docs - Remluben</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" integrity="sha512-Oy18vBnbSJkXTndr2n6lDMO5NN31UljR8e/ICzVPrGpSud4Gkckb8yUpqhKuUNoE+o9gAb4O/rAxxw1ojyUVzg==" crossorigin="anonymous" />
+    <style>
+        body {
+            background: #0375a6;
+        }
+
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+
+            background: #fff;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <article id="app"
+             class="markdown-body"></article>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js" integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw==" crossorigin="anonymous"></script>
+
+    <script id="app-footer" type="script/template">
+        <div style="padding-top: 2rem;text-align:center;">
+            (c) <a href="https://www.remluben.at" target="_blank">Remluben</a>
+        </div>
+    </script>
+    <script id="app-header" type="script/template">
+        <a href="/index.md">
+            <img src="https://cdn.remluben.at/assets/logo-128x128.png"
+                 alt="Logo of Remluben"/>
+        </a>
+    </script>
+
+    <script>
+        let app = (function() {
+            let that = {},
+                priv = {};
+
+            that.$el = $('#app');
+
+            if (document.URL.indexOf('?') !== -1) {
+                priv.baseUrl = document.URL.substr(0, document.URL.indexOf('?'));
+            }
+            else {
+                priv.baseUrl = document.URL;
+            }
+
+            if (priv.baseUrl.lastIndexOf('/') !== (priv.baseUrl.length - 1)) {
+                priv.baseUrl += '/';
+            }
+
+            priv.footerHtml = $('#app-footer').text();
+            priv.headerHtml = $('#app-header').text();
+
+            that.load = function(item) {
+                $.ajax({
+                    dataType: 'html',
+                    type: 'GET',
+                    url: priv.baseUrl +  item
+                }).done(function(markdown) {
+
+                    that.$el.html(
+                        priv.headerHtml +
+                        (new showdown.Converter).makeHtml(markdown) +
+                        priv.footerHtml
+                    );
+
+                    // internal links are opened with the requested markdown
+                    // page added as *page* URL param
+                    that.$el.find('a[href^="/"').on('click', function(e) {
+                        e.preventDefault();
+
+                        window.location.href = priv.baseUrl
+                                             + '?page=' + $(this).attr('href').substr(1);
+                    });
+                }).fail(function() {
+                    if (item === 'index.md') {
+                        return;
+                    }
+
+                    window.location.href = priv.baseUrl;
+                });
+            };
+
+            that.init = function() {
+                const urlParams = new URLSearchParams(
+                    document.URL.substr(document.URL.indexOf('?'))
+                );
+
+                that.load(urlParams.get('page') || 'index.md');
+            };
+
+            return that;
+        })();
+
+        jQuery(document).ready(function($) {
+            app.init();
+        });
+    </script>
+</body>
+</html>
