@@ -48,7 +48,7 @@ php -S localhost: 8000
 
 To link a page in markdown (see sample documents) a link must begin with */*.
 
-Example: `[Changelog] (/pages/changelog.md)`
+Example: `[Changelog](/pages/changelog.md)`
 
 ### Change the logo
 
